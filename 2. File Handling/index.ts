@@ -22,7 +22,6 @@ console.log(result.size);
 console.log(os.cpus().length);
 
 
-
 //! Blocking and Non-blocking Operations
 // Blocking operations, with synchronous examples like fs.writeFileSync and fs.readFileSync.
 // Non-blocking operations involve callback functions for obtaining results.
