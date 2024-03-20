@@ -44,18 +44,27 @@ app.route('/api/users/:id').get((req, res) => {
   const user = USERS?.find(user => id === user.id)
   console.log(user);
 
-  return res.json(user)
+  if (user) {
+    return res.json(user)
+  } else {
+    return res.json({
+      status: "User data Not found"
+    })
+  }
 }).patch((req, res) => {
   let body = req.body;
-  let id = req.id;
+  console.log(body);
+  let id = Number(req.params.id);
+  console.log(id);
   let data = USERS.find((user) => user.id == id);
+  let index = USERS.findIndex((user) => user.id == id);
+  console.log("data==>", data);
   let updatedData = {
-    data,
-    ...body
+    ...data, ...body
   }
-  USERS.splice(id,1,updatedData)
-
-  fs.writeFile('./MOCK_DATA.json', USERS, (err) => {
+  USERS.splice(index, 1, updatedData)
+  console.log(updatedData)
+  fs.writeFile('./MOCK_DATA.json', JSON.stringify(USERS), (err) => {
     return res.json({
       status: "Updated successfully"
     })
@@ -63,9 +72,10 @@ app.route('/api/users/:id').get((req, res) => {
 
 }).delete((req, res) => {
   let id = Number(req.params.id);
-  let findID = USERS.findIndex((user) => user.id == id);
-  if (findID?.id) {
-    let updatedData = USERS.filter((user) => user.id != id);
+  let findData = USERS.findIndex((user) => user.id === id);
+  console.log("data", findData);
+  if (findData !== -1) {
+    let updatedData = USERS.filter((user) => user.id !== id);
     console.log(USERS.length)
     fs.writeFile('./MOCK_DATA.json', JSON.stringify(updatedData), (err) => {
       return res.json({
