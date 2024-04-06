@@ -1,93 +1,108 @@
 const express = require('express');
-const USERS = require('./MOCK_DATA.json')
-const fs = require('fs')
 const app = express();
+const data = require('./MOCK_DATA.json')
+const PORT = 3000
+const fs = require('fs')
+
 app.use(express.urlencoded({
   extends: false
 }))
-const PORT = 8000
 
-//ssr
 app.get('/users', (req, res) => {
-  let htmlCode = `<ul>
-    ${USERS.map((user) =>
-    `<li>${user.first_name}</li>`
-  ).join('')}
-    </ul>`
-  return res.send({
-    data: htmlCode,
-    status: "success"
-  })
+  return res.json({ status: 200, res: data })
 })
 
 
 app.get('/api/users', (req, res) => {
-  return res.json(USERS)
+
+  let htmlData = `<ul>
+  ${data.map((res) => {
+    return (
+      `<li>
+      <ul>
+      <li style="color:red;">ID : ${res?.id ?? 'NF'}</li>
+      <li>FIRST Name : ${res?.first_name}</li>
+      <li>LAST NAME : ${res.last_name}</li>
+      <li>EMAIL : ${res.email}</li>
+      <li>GENDER : ${res.gender}</li>
+      </ul>
+      </li>
+      `
+    )
+  }).join('')}
+  </ul>`
+  return res.send(htmlData)
 })
 
-app.post('/api/adduser', (req, res) => {
-  let bodyData = req.body;
-  USERS.push({
-    ...bodyData,
-    id: USERS.length + 1
-  })
-  fs.writeFile('./MOCK_DATA.json', JSON.stringify(USERS), (err) => {
-    return res.json({
-      status: "Added successfully",
-      id: USERS.length
+
+app.get('/user/:id', (req, res) => {
+  let id = Number(req.params.id);
+  let userData = data.find((res) => res?.id === id);
+  if (userData) {
+    return res.json({ status: 200, res: userData })
+  } else {
+    return res.status(200).json({ status: 200, res: "User id not found" })
+  }
+})
+
+app.post('/user', (req, res) => {
+  const body = req.body;
+  let { first_name, last_name } = body;
+  if (first_name && last_name) {
+    const newData = {
+      ...body,
+      id: data.length + 1
+    }
+    data.push(newData)
+
+    fs.writeFile('./MOCK_DATA.json', JSON.stringify(data), (err, result) => {
+      return res.json({ status: 200, id: data.length, message: "created successfully", newData })
     })
-  })
+  }
+  else {
+    return res.json({ message: "required fields" })
+  }
 })
 
-app.route('/api/users/:id').get((req, res) => {
+
+
+app.patch('/user/:id', (req, res) => {
+  const body = req.body;
+  if(body.id){
+  return res.json({id:"Not have a permission to change the id"})
+  }
   const id = Number(req.params.id);
-  const user = USERS?.find(user => id === user.id)
-  console.log(user);
-
-  if (user) {
-    return res.json(user)
-  } else {
-    return res.json({
-      status: "User data Not found"
-    })
+  const findData = data.find((res) => res.id === id);
+  const findDataIndex = data.findIndex((res) => res.id === id)
+  let modifiedData = {
+    ...findData, ...body
   }
-}).patch((req, res) => {
-  let body = req.body;
-  console.log(body);
-  let id = Number(req.params.id);
-  console.log(id);
-  let data = USERS.find((user) => user.id == id);
-  let index = USERS.findIndex((user) => user.id == id);
-  console.log("data==>", data);
-  let updatedData = {
-    ...data, ...body
-  }
-  USERS.splice(index, 1, updatedData)
-  console.log(updatedData)
-  fs.writeFile('./MOCK_DATA.json', JSON.stringify(USERS), (err) => {
-    return res.json({
-      status: "Updated successfully"
-    })
+  data.splice(findDataIndex, 1, modifiedData)
+  fs.writeFile('./MOCK_DATA.json', JSON.stringify(data), (err, result) => {
+    return res.json({ status: 200, message: "created successfully", modifiedData })
   })
+})
 
-}).delete((req, res) => {
+app.delete('/user/:id', (req, res) => {
   let id = Number(req.params.id);
-  let findData = USERS.findIndex((user) => user.id === id);
-  console.log("data", findData);
-  if (findData !== -1) {
-    let updatedData = USERS.filter((user) => user.id !== id);
-    console.log(USERS.length)
-    fs.writeFile('./MOCK_DATA.json', JSON.stringify(updatedData), (err) => {
-      return res.json({
-        status: "deleted successfully"
-      })
+  let userDataIndex = data.findIndex((res) => res?.id === id);
+  if (userDataIndex !== -1) {
+    data.splice(userDataIndex, 1);
+    fs.writeFile('./MOCK_DATA.json', JSON.stringify(data), (err, res) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("DELETE METHOD SUCCESS");
+      }
     })
+    return res.json({ status: 200, res: "userData has been deleted successfully" })
   } else {
-    return res.json({
-      status: "ID not found"
-    })
+    return res.status(200).json({ res: "User id not found" })
   }
 })
 
 
-app.listen(PORT, () => console.log(`server started ${PORT}`))
+
+app.listen(PORT, 'localhost', () => {
+  console.log("Server started at port ", PORT);
+})

@@ -11,14 +11,14 @@ app.use(express.urlencoded({ extended: false }))
 app.get('/user', (req, res) => {
     res.setHeader("X-Name","Darshan")
     console.log(req.headers);
-    return res.json({ status: "USER ROUTER RESPONSE" })
+    return res.status(200).json({ status: "USER ROUTER RESPONSE" })
 })
 app.get('/users', (req, res) => {
-    return res.json({ status: "USERS ROUTER RESPONSE" })
+    return res.status(200).json({ status: "USERS ROUTER RESPONSE" })
 })
 
 app.get('*', (req,res) => {
-    return res.json({ status: "404 Found" })
+    return res.status(404).json({ status: "404 Found" })
 })
 
 
