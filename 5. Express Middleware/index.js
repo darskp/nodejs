@@ -46,6 +46,9 @@ app.use(express.urlencoded({ extended: false }))
 const fs = require('fs');
 app.use((req, res, next) => {
     const date = new Date()
+    if(req.path=="/favicon.ico"){
+    return res.end();
+    }
     let logData = `\n ${date.toLocaleString()} - request Method:${req.method}, request path : ${req.path}, IP address : ${req.ip}, `
     fs.appendFile('log.txt', logData, (err) => {
         next();

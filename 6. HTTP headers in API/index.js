@@ -1,6 +1,9 @@
 //headers - additional info/ meta data about the API request and response
 //  res.setHeader("X-Name","Darshan")
 // add custom header  - prefix should starts with X - - to differentiate with default
+// how to read headers
+    // console.log(req.headers);
+
 
 const express = require('express');
 const app = express();
